@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Trend Validator",
+    "slug": "trend-validator",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "trendvalidator",
+    "newArchEnabled": false,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0E1018"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.trendvalidator.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0E1018"
+      },
+      "package": "com.trendvalidator.app"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

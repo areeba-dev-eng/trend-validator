@@ -1,0 +1,43 @@
+// frontend/src/data/livetrends.js
+export const liveTrends = [
+  {
+    id: '1',
+    title: 'AI Customer Support Automation',
+    category: 'AI Automation',
+    score: 94,
+    change: '+28.4%',
+    direction: 'up',
+    color: '#8B7CFF',
+    series: [20, 28, 35, 42, 55, 64, 78, 92],
+  },
+  {
+    id: '2',
+    title: 'AI Email Outreach Automation',
+    category: 'Marketing AI',
+    score: 88,
+    change: '+19.2%',
+    direction: 'up',
+    color: '#22D3EE',
+    series: [12, 18, 30, 26, 44, 58, 72, 84],
+  },
+  {
+    id: '3',
+    title: 'AI Business Automation SAAS',
+    category: 'Business',
+    score: 91,
+    change: '+31.8%',
+    direction: 'up',
+    color: '#FF7AC6',
+    series: [14, 24, 46, 60, 74, 66, 82, 91],
+  },
+  {
+    id: '4',
+    title: 'AI Content Repurposing Automation',
+    category: 'Content AI',
+    score: 86,
+    change: '+17.6%',
+    direction: 'up',
+    color: '#34E5B0',
+    series: [10, 16, 28, 40, 55, 68, 74, 86],
+  },
+];
