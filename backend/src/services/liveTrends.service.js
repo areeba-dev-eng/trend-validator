@@ -1,328 +1,3 @@
-// // backend/src/services/liveTrends.service.js
-// 'use strict';
-
-// const trendService = require('./trend.service');
-// const env          = require('../config/env');
-// const logger       = require('../config/logger');
-// const TTLCache     = require('../utils/cache');
-
-// const cache = new TTLCache({ max: 50 });
-
-// /* Fixed fallback topics — used when real trending queries cannot be fetched */
-// const FALLBACK_TOPICS = [
-//   { title: 'AI Customer Support Automation', category: 'AI Automation', color: '#8B7CFF' },
-//   { title: 'AI Email Outreach Automation', category: 'Marketing AI', color: '#22D3EE' },
-//   { title: 'AI Business Automation SAAS', category: 'Business', color: '#FF7AC6' },
-//   { title: 'AI Content Repurposing Automation', category: 'Content AI', color: '#34E5B0' },
-//   { title: 'AI Voice Agents', category: 'Voice AI', color: '#F59E0B' },
-//   { title: 'Micro SaaS Ideas', category: 'Startups', color: '#10B981' },
-//   { title: 'No Code Automation', category: 'Automation', color: '#3B82F6' },
-//   { title: 'AI Video Editing Tools', category: 'Creator Economy', color: '#EC4899' },
-// ];
-
-// function clamp(v, min, max) {
-//   return Math.max(min, Math.min(max, v));
-// }
-
-// /* Fetch real trending queries */
-// async function fetchRealTrendingQueries(seedQuery = 'artificial intelligence') {
-//   try {
-//     const response = await trendService.fetchTrendData(seedQuery, {
-//       timeframe: 'now 7-d',
-//     });
-
-//     const related = response?.related || [];
-
-//     const queries = related
-//       .map((r) => r.query)
-//       .filter(Boolean);
-
-//     return queries.length >= 4 ? queries : [];
-//   } catch {
-//     return [];
-//   }
-// }
-
-// function deriveScore(stats) {
-//   const growth = Number(stats?.slopePct || 0);
-//   const momentum = Number(stats?.momentum || 0);
-//   const avg = Number(stats?.average || 0);
-//   const peak = Number(stats?.peak || 0);
-
-//   const normG = clamp(((growth + 100) / 200) * 100, 0, 100);
-//   const normM = clamp(((momentum + 100) / 200) * 100, 0, 100);
-
-//   return clamp(
-//     Math.round(
-//       normG * 0.35 +
-//       normM * 0.30 +
-//       avg * 0.20 +
-//       peak * 0.15,
-//     ),
-//     0,
-//     100,
-//   );
-// }
-
-// function buildCategory(query) {
-//   const q = query.toLowerCase();
-
-//   if (q.includes('marketing')) return 'Marketing AI';
-//   if (q.includes('video')) return 'Video AI';
-//   if (q.includes('email')) return 'Sales AI';
-//   if (q.includes('customer')) return 'Support AI';
-//   if (q.includes('coding') || q.includes('developer')) return 'Developer AI';
-//   if (q.includes('content')) return 'Content AI';
-//   if (q.includes('business')) return 'Business AI';
-
-//   return 'AI Automation';
-// }
-
-// const PALETTE = [
-//   '#8B5CF6',
-//   '#06B6D4',
-//   '#EC4899',
-//   '#10B981',
-//   '#F59E0B',
-//   '#3B82F6',
-//   '#8B7CFF',
-//   '#22D3EE',
-// ];
-
-// async function enrichTopic(queryOrTopic, index) {
-//   const isString = typeof queryOrTopic === 'string';
-
-//   const title = isString
-//     ? queryOrTopic
-//     : queryOrTopic.title;
-
-//   const category = isString
-//     ? buildCategory(title)
-//     : queryOrTopic.category;
-
-//   const color = isString
-//     ? PALETTE[index % PALETTE.length]
-//     : queryOrTopic.color;
-
-//   try {
-//     const td = await trendService.fetchTrendData(title, {
-//       timeframe: 'today 12-m',
-//     });
-
-//     const stats = td.stats || {};
-
-//     const momentum = Number(stats.momentum || 0);
-//     const score = deriveScore(stats);
-
-//     let series =
-//       Array.isArray(td.series) && td.series.length >= 4
-//         ? td.series.slice(-12)
-//         : null;
-
-//     if (!series) {
-//       return null;
-//     }
-
-//    const first = Number(series?.[0] || 0);
-// const last = Number(series?.[series.length - 1] || 0);
-
-// let growth = 0;
-
-// if (first > 0 && last > 0) {
-//   growth = ((last - first) / first) * 100;
-// }
-
-// growth = Number(growth.toFixed(1));
-//    const displayGrowth =
-//   Math.abs(growth) < 1
-//     ? (Math.random() * 12 + 1).toFixed(1)
-//     : Math.abs(growth).toFixed(1);
-
-// return {
-//   id: String(index + 1),
-//   title,
-//   category,
-//   color,
-
-//   score: Math.max(score || 0, 15),
-
-//   change:
-//     growth >= 0
-//       ? `+${displayGrowth}%`
-//       : `-${displayGrowth}%`,
-
-//   direction: growth >= 0 ? 'up' : 'down',
-
-//   momentum: Math.round(momentum),
-
-//   growth: Math.round(growth),
-
-//   series,
-
-//   updatedAt: new Date().toISOString(),
-// };
-//   } catch (err) {
-//     logger.warn(
-//       {
-//         err: err.message,
-//         title,
-//       },
-//       'Live trend enrichment failed',
-//     );
-
-//     return null;
-//   }
-// }
-
-// async function enrichFallback(topic, index) {
-//   try {
-//     const title = topic.title;
-
-//     const td = await trendService.fetchTrendData(title, {
-//       timeframe: 'today 12-m',
-//     });
-
-//     const stats = td.stats || {};
-
-//     const momentum = Number(stats.momentum || 0);
-//     const score = deriveScore(stats);
-
-//     let series =
-//       Array.isArray(td.series) && td.series.length >= 4
-//         ? td.series.slice(-12)
-//         : null;
-
-//     /* Safe fallback series */
-//     if (!series) {
-//       series = [20, 28, 35, 40, 52, 60, 68, 72, 78, 84, 90, 96];
-//     }
-
-//    let growth =
-//   series.length >= 2
-//     ? (
-//         ((series[series.length - 1] - series[0]) /
-//           Math.max(series[0], 1)) *
-//         100
-//       )
-//     : 0;
-
-// /* LIMIT INSANE VALUES */
-// growth = Math.max(-45, Math.min(45, growth));
-
-// growth = Number(growth.toFixed(1));
-//     return {
-//       id: String(index + 1),
-//       title: topic.title,
-//       category: topic.category,
-//       color: topic.color,
-
-//       score: Math.max(score || 0, 15),
-
-//       change: `${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%`,
-
-//       direction: growth >= 0 ? 'up' : 'down',
-
-//       momentum: Math.round(momentum),
-
-//       growth: Math.round(growth),
-
-//       series,
-
-//       updatedAt: new Date().toISOString(),
-//     };
-//   } catch (err) {
-//     logger.warn(
-//       {
-//         err: err.message,
-//         topic: topic.title,
-//       },
-//       'Fallback enrichment failed',
-//     );
-
-//     return {
-//       id: String(index + 1),
-//       title: topic.title,
-//       category: topic.category,
-//       color: topic.color,
-
-//       score: 50,
-
-//       change: '+12.4%',
-
-//       direction: 'up',
-
-//       momentum: 60,
-
-//       growth: 12,
-
-//       series: [20, 30, 40, 50, 60, 70, 80, 90],
-
-//       updatedAt: new Date().toISOString(),
-//     };
-//   }
-// }
-
-// async function getLiveTrendsForHome({ limit = 4 } = {}) {
-//   return cache.wrap(
-//     `live:home:v2:${limit}`,
-//     async () => {
-//       /* Try real trending queries first */
-//       const realQueries = await fetchRealTrendingQueries();
-
-//       if (realQueries.length >= 4) {
-//         const raw = await Promise.all(
-//           realQueries
-//             .slice(0, Math.min(limit * 2, 10))
-//             .map(enrichTopic),
-//         );
-
-//         const items = raw
-//           .filter(Boolean)
-//           .filter((i) => i.score > 0)
-//           .sort((a, b) => b.score - a.score)
-//           .slice(0, limit);
-
-//         if (items.length >= limit) {
-//           logger.info(
-//             { count: items.length },
-//             'Live trends: using real trending queries',
-//           );
-
-//           return {
-//             items,
-//             generatedAt: new Date().toISOString(),
-//           };
-//         }
-//       }
-
-//       /* Fallback topics */
-//       logger.info('Live trends: using fallback topics');
-
-//       const selected = FALLBACK_TOPICS.slice(0, limit);
-
-//       const rawItems = await Promise.all(
-//         selected.map(enrichFallback),
-//       );
-
-//       const items = rawItems
-//         .filter(Boolean)
-//         .sort((a, b) => b.score - a.score);
-
-//       return {
-//         items,
-//         generatedAt: new Date().toISOString(),
-//       };
-//     },
-//     env.CACHE_LIVE_TTL_MS,
-//   );
-// }
-
-// module.exports = {
-//   getLiveTrendsForHome,
-// };
-
-
-
 // src/services/liveTrends.service.js
 'use strict';
 
@@ -598,59 +273,111 @@ async function enrichFallback(topic, index) {
  * MAIN EXPORT — GET LIVE TRENDS FOR HOME
  * ═══════════════════════════════════════════════════════════════════════════ */
 
+/**
+ * Builds trending items instantly, no network calls at all.
+ * Used as a last-resort so the home screen is NEVER empty and NEVER
+ * makes the client wait past its own request timeout.
+ */
+function buildInstantFallback(limit) {
+  const selected = FALLBACK_TOPICS.slice(0, limit);
+  const items = selected.map((topic, index) => {
+    const hash  = topic.title.split('').reduce((h, c) => ((h << 5) + h) ^ c.charCodeAt(0), 5381) >>> 0;
+    const base  = 42 + (hash % 22);
+    const slope = 5  + (hash % 6);
+    const series = seededFallbackSeries(topic.title, 12, base, slope);
+    const growth = clamp(calcGrowthRegression(series), -15, 60);
+
+    return {
+      id:        String(index + 1),
+      title:     topic.title,
+      category:  topic.category,
+      color:     topic.color,
+      score:     45 + (hash % 30),
+      change:    `${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%`,
+      direction: growth >= 0 ? 'up' : 'down',
+      momentum:  10 + (hash % 20),
+      growth:    Math.round(growth),
+      series,
+      updatedAt: new Date().toISOString(),
+    };
+  });
+
+  return { items, generatedAt: new Date().toISOString() };
+}
+
 async function getLiveTrendsForHome({ limit = 4 } = {}) {
   return cache.wrap(
     `live:home:v3:${limit}`,
     async () => {
-      /* ── 1. Try real trending queries ── */
-      const realQueries = await fetchRealTrendingQueries();
+      /* ── Fetch real data, but never let the client wait past its own
+       *    timeout for it. If SerpAPI is slow/unavailable, race a hard
+       *    time budget and serve instant synthetic data instead. ── */
+      const REAL_DATA_BUDGET_MS = 9000; // stays safely under the app's 15s fetch timeout
 
-      if (realQueries.length >= 3) {
-        // Enrich up to 2× limit, never returns null now
-        const raw = await Promise.all(
-          realQueries
-            .slice(0, Math.min(limit * 2, 12))
-            .map(enrichTopic),
-        );
+      const realDataAttempt = (async () => {
+        /* ── 1. Try real trending queries ── */
+        const realQueries = await fetchRealTrendingQueries();
 
-        const items = raw
-          .filter(Boolean)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, limit);
-
-        if (items.length >= limit) {
-          logger.info({ count: items.length }, 'Live trends: real queries');
-          return { items, generatedAt: new Date().toISOString() };
-        }
-
-        /* Supplement with fallback if real queries didn't fill the slots */
-        if (items.length > 0 && items.length < limit) {
-          const needed  = limit - items.length;
-          const usedTitles = new Set(items.map((i) => i.title));
-          const extra = await Promise.all(
-            FALLBACK_TOPICS
-              .filter((t) => !usedTitles.has(t.title))
-              .slice(0, needed)
-              .map((t, i) => enrichFallback(t, items.length + i)),
+        if (realQueries.length >= 3) {
+          const raw = await Promise.all(
+            realQueries
+              .slice(0, Math.min(limit * 2, 12))
+              .map(enrichTopic),
           );
-          const combined = [...items, ...extra.filter(Boolean)]
+
+          const items = raw
+            .filter(Boolean)
             .sort((a, b) => b.score - a.score)
             .slice(0, limit);
-          logger.info({ count: combined.length }, 'Live trends: mixed (real + fallback)');
-          return { items: combined, generatedAt: new Date().toISOString() };
+
+          if (items.length >= limit) {
+            logger.info({ count: items.length }, 'Live trends: real queries');
+            return { items, generatedAt: new Date().toISOString() };
+          }
+
+          if (items.length > 0 && items.length < limit) {
+            const needed  = limit - items.length;
+            const usedTitles = new Set(items.map((i) => i.title));
+            const extra = await Promise.all(
+              FALLBACK_TOPICS
+                .filter((t) => !usedTitles.has(t.title))
+                .slice(0, needed)
+                .map((t, i) => enrichFallback(t, items.length + i)),
+            );
+            const combined = [...items, ...extra.filter(Boolean)]
+              .sort((a, b) => b.score - a.score)
+              .slice(0, limit);
+            logger.info({ count: combined.length }, 'Live trends: mixed (real + fallback)');
+            return { items: combined, generatedAt: new Date().toISOString() };
+          }
         }
+
+        /* ── 2. Fallback topics enriched via SerpAPI (still real network calls) ── */
+        logger.info('Live trends: using fallback topics');
+        const selected  = FALLBACK_TOPICS.slice(0, limit);
+        const rawItems  = await Promise.all(selected.map(enrichFallback));
+        const items     = rawItems
+          .filter(Boolean)
+          .sort((a, b) => b.score - a.score);
+
+        return { items, generatedAt: new Date().toISOString() };
+      })().catch((err) => {
+        logger.warn({ err: err.message }, 'Live trends: real-data path threw');
+        return null;
+      });
+
+      const timeoutSignal = new Promise((resolve) => {
+        setTimeout(() => resolve(null), REAL_DATA_BUDGET_MS);
+      });
+
+      const winner = await Promise.race([realDataAttempt, timeoutSignal]);
+
+      if (winner && Array.isArray(winner.items) && winner.items.length > 0) {
+        return winner;
       }
 
-      /* ── 2. Fallback topics (always succeeds now) ── */
-      logger.info('Live trends: using fallback topics');
-
-      const selected  = FALLBACK_TOPICS.slice(0, limit);
-      const rawItems  = await Promise.all(selected.map(enrichFallback));
-      const items     = rawItems
-        .filter(Boolean)
-        .sort((a, b) => b.score - a.score);
-
-      return { items, generatedAt: new Date().toISOString() };
+      logger.info('Live trends: real-data path too slow/empty — serving instant fallback');
+      return buildInstantFallback(limit);
     },
     env.CACHE_LIVE_TTL_MS,
   );
