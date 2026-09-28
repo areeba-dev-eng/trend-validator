@@ -55,8 +55,5 @@ try {
 module.exports = {
   ...parsed,
   CORS_ORIGINS_LIST: parsed.CORS_ORIGINS.split(',').map((s) => s.trim()),
-  /* Derived flag — error.js reads env.IS_PROD to decide whether to expose
-   * stack traces; it was never defined, so stack traces leaked in every
-   * environment including production. Fixed here at zero extra cost. */
   IS_PROD: parsed.NODE_ENV === 'production',
 };
